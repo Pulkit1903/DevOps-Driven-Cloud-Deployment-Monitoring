@@ -36,67 +36,24 @@ The project runs on a single **AWS EC2 Ubuntu instance** with the following DevO
 - Prometheus (Monitoring)
 - Grafana (Dashboard Visualization)
 
-### 🔧 Installation Script for Ubuntu EC2
+## 🔁 Project Workflow
 
-Use the following bash script to install all required tools on your Ubuntu-based EC2 instance:
+This project automates the containerized deployment of an application, complete with monitoring using Prometheus and Grafana.
 
-```bash
-#!/bin/bash
+1. **Checkout Code from GitHub**  
+   Jenkins pulls the latest code from the GitHub repository.
 
-# Update system packages
-sudo apt update && sudo apt upgrade -y
+2. **Build Docker Image**  
+   Jenkins uses the `Dockerfile` to build a Docker image for the application.
 
-# Install Docker
-sudo apt install -y docker.io
-sudo systemctl enable docker
-sudo systemctl start docker
-sudo usermod -aG docker ubuntu  # or $(whoami)
+3. **Push to Docker Hub**  
+   The built image is tagged and pushed to your Docker Hub repository.
 
-# Install Jenkins
-sudo apt install -y openjdk-11-jdk
-wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
-sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
-sudo apt update
-sudo apt install -y jenkins
-sudo systemctl enable jenkins
-sudo systemctl start jenkins
+4. **Run Docker Compose**  
+   Jenkins triggers `docker-compose up` to deploy the containerized application.
 
-# Install Prometheus
-wget https://github.com/prometheus/prometheus/releases/download/v2.48.1/prometheus-2.48.1.linux-amd64.tar.gz
-tar xvf prometheus-*.tar.gz
-sudo mv prometheus-*/prometheus /usr/local/bin/
-sudo mv prometheus-*/promtool /usr/local/bin/
+5. **Prometheus Scrapes Metrics**  
+   Prometheus is configured to scrape metrics from the running container (e.g., using `/metrics` endpoint).
 
-# Create Prometheus config and service
-sudo useradd --no-create-home --shell /bin/false prometheus
-sudo mkdir -p /etc/prometheus /var/lib/prometheus
-sudo chown prometheus:prometheus /etc/prometheus /var/lib/prometheus
-
-cat <<EOF | sudo tee /etc/systemd/system/prometheus.service
-[Unit]
-Description=Prometheus
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-User=prometheus
-ExecStart=/usr/local/bin/prometheus \
-  --config.file=/etc/prometheus/prometheus.yml \
-  --storage.tsdb.path=/var/lib/prometheus/
-
-[Install]
-WantedBy=default.target
-EOF
-
-sudo systemctl daemon-reexec
-sudo systemctl start prometheus
-sudo systemctl enable prometheus
-
-# Install Grafana
-sudo apt install -y apt-transport-https software-properties-common
-sudo wget -q -O /usr/share/keyrings/grafana.key https://apt.grafana.com/gpg.key
-echo "deb [signed-by=/usr/share/keyrings/grafana.key] https://apt.grafana.com stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
-sudo apt update
-sudo apt install -y grafana
-sudo systemctl enable grafana-server
-sudo systemctl start grafana-server
+6. **Grafana Visualizes Metrics**  
+   Grafana connects to Prometheus as a data source and displays system-level metrics like **CPU usage**, **memory consumption**, etc., via prebuilt or custom dashboards.
