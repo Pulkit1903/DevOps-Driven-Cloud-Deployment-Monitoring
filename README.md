@@ -38,22 +38,31 @@ The project runs on a single **AWS EC2 Ubuntu instance** with the following DevO
 
 ## 🔁 Project Workflow
 
-This project automates the containerized deployment of an application, complete with monitoring using Prometheus and Grafana.
+The pipeline follows a fully automated DevOps lifecycle — from code commit to cloud deployment and monitoring.
 
-1. **Checkout Code from GitHub**  
-   Jenkins pulls the latest code from the GitHub repository.
+---
 
-2. **Build Docker Image**  
-   Jenkins uses the `Dockerfile` to build a Docker image for the application.
+### 🧩 Step-by-Step Breakdown
 
-3. **Push to Docker Hub**  
-   The built image is tagged and pushed to your Docker Hub repository.
+🔹 **1. Checkout Code from GitHub**  
+➡️ Jenkins automatically pulls the latest code from the GitHub repository when changes are pushed.
 
-4. **Run Docker Compose**  
-   Jenkins triggers `docker-compose up` to deploy the containerized application.
+🔹 **2. Build Docker Image**  
+➡️ Jenkins builds a Docker image from the `Dockerfile`, packaging the application and its dependencies.
 
-5. **Prometheus Scrapes Metrics**  
-   Prometheus is configured to scrape metrics from the running container (e.g., using `/metrics` endpoint).
+🔹 **3. Push to Docker Hub**  
+➡️ The image is tagged and pushed to a public/private Docker Hub registry.
 
-6. **Grafana Visualizes Metrics**  
-   Grafana connects to Prometheus as a data source and displays system-level metrics like **CPU usage**, **memory consumption**, etc., via prebuilt or custom dashboards.
+🔹 **4. Run Docker Compose**  
+➡️ Jenkins executes `docker-compose up` to deploy the container(s) on the EC2 instance.
+
+🔹 **5. Prometheus Scrapes Metrics**  
+➡️ Prometheus collects real-time metrics from the container’s `/metrics` endpoint (if exposed), or using a Node Exporter for system metrics.
+
+🔹 **6. Grafana Visualizes Everything**  
+➡️ Grafana queries Prometheus and presents **CPU**, **RAM**, **network**, and custom app metrics in rich, real-time dashboards.
+
+---
+
+🎯 **Result:**  
+A continuously deployed, containerized app with full-stack observability — all running on a single AWS EC2 instance.
